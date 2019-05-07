@@ -43,7 +43,7 @@ inline __device__ bool cudaSemaphoreEBOTryWait(const cudaSemaphore_t sem,
     writers are done.
   */
   unsigned int * const writerWaiting = currCount + 2;
- // unsigned int * const Priority = currCount + 5;
+  unsigned int * const Priority = currCount + 5;
   __shared__ bool acq1, acq2;
 
   __syncthreads();
@@ -51,7 +51,7 @@ inline __device__ bool cudaSemaphoreEBOTryWait(const cudaSemaphore_t sem,
   {
     acq1 = false;
     // try to acquire the sem head "lock"
-   // while(atomicCAS(Priority, 0, 0) != 0);
+    while(atomicCAS(Priority, 0, 0) != 0);
     if (atomicCAS(lock, 0, 1) == 0) {
       // atomicCAS acts as a load acquire, need TF to enforce ordering
       __threadfence();
@@ -195,11 +195,11 @@ inline __device__ void cudaSemaphoreEBOPost(const cudaSemaphore_t sem,
   */
   unsigned int * const currCount = semaphoreBuffers + (sem * 4 * NUM_SM);
   unsigned int * const lock = currCount + 1;
-  //unsigned int * const Priority = currCount + 5;
+  unsigned int * const Priority = currCount + 5;
   __shared__ bool acquired;
 
   if (isMasterThread) { acquired = false;
-  //atomicAdd(Priority, 1); 
+  atomicAdd(Priority, 1); 
   
   }
   __syncthreads();
@@ -212,7 +212,7 @@ inline __device__ void cudaSemaphoreEBOPost(const cudaSemaphore_t sem,
       // try to acquire sem head "lock"
       if (atomicCAS(lock, 0, 1) == 0) {
         // atomicCAS acts as a load acquire, need TF to enforce ordering
-       // atomicSub(Priority, 1);
+        atomicSub(Priority, 1);
         __threadfence();
         acquired = true;
       }
