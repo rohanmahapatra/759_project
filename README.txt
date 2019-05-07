@@ -1,3 +1,5 @@
+CUDA Path inside every directory has to be manually set
+
 USAGE
 -----
 
